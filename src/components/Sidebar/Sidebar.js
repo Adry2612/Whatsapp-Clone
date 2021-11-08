@@ -9,9 +9,12 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import SearchIcon from '@mui/icons-material/Search';
 import db from '../../firebase';
 import { collection, onSnapshot } from 'firebase/firestore';
+import {useStateValue} from "../../components/StateProvider/StateProvider";
+
 
 export default function Sidebar() {
     const [rooms, setRooms] = useState([]);
+    const [{ user }, dispatch] = useStateValue();
 
     /* Cuando se cargue el componente obtenemos los datos de chat de Firebase. */
     useEffect(() => {
@@ -33,7 +36,7 @@ export default function Sidebar() {
     return (
         <div className="sidebar">
             <div className="sidebar__header">
-                <Avatar />
+                <Avatar src={user?.photoURL}/>
 
                 <div className="sidebar__headerRight">
                     <IconButton>
