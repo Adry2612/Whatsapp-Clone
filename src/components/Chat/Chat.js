@@ -1,4 +1,8 @@
 import React, {useEffect, useState} from 'react';
+import {useParams} from "react-router-dom";
+import { getDoc, doc } from 'firebase/firestore';
+
+import db from '../../firebase';
 import "./Chat.css";
 
 import {Avatar, IconButton} from "@mui/material";
@@ -14,6 +18,18 @@ export default function Chat() {
     /* Mensaje a enviar. */
     const [input, setInput] = useState("");
 
+    const [roomName, setRoomName] = useState("");
+
+    const { roomId } = useParams();
+
+    /* Buscamos cambios en la id del chat para modificar los mensajes del chat. */
+    useEffect(async () => {
+        if (roomId) {
+            const roomRef = doc(db, "rooms", roomId);
+            const roomSnap = await getDoc(roomRef);
+            setRoomName(roomSnap.data().name);
+        }
+    }, [roomId]);
 
     /* Cada vez que se cargue el componente se genera el número aleatorio que modifica el seed. */
     useEffect(() => {
@@ -34,7 +50,7 @@ export default function Chat() {
                 <Avatar src={`https://avatars.dicebear.com/api/human/${seed}.svg`}/>
 
                 <div className="chat__headerInfo">
-                    <h3> Nombre de chat </h3>
+                    <h3> {roomName} </h3>
                     <p> Última conexión </p>
                 </div>
 

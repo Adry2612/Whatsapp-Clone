@@ -1,9 +1,13 @@
 import React, {useEffect, useState} from 'react';
+import { Link } from "react-router-dom";
+import { collection, addDoc } from "firebase/firestore";
+
 import './SidebarChat.css';
 
-import {Avatar} from "@mui/material"
+import db from "../../firebase";
+import {Avatar} from "@mui/material";
 
-export default function SidebarChat({addNewChat}) {
+export default function SidebarChat({  id, name, addNewChat }) {
 
     /* Numero aleatorio que modifica la imagen de perfil. */
     const [seed, setSeed] = useState("");
@@ -14,23 +18,28 @@ export default function SidebarChat({addNewChat}) {
         setSeed(randomNumber);
     }, []);
 
-    const createChat = () => {
+    const createChat = async () => {
         const roomName = prompt("Introduce un nombre para el chat.");
 
+        /* Añadir nuevo chat a Firebase. */
         if (roomName) {
-            
+            /* A addDoc le pasamos la referencia al documento (collection(db, "nombre de documento"), {valores a añadir}). */
+            await addDoc(collection(db, "rooms"), {name: roomName});
         }
     };
 
+    console.log(id);
     return !addNewChat ? (
-        <div className="sidebarChat">
-            <Avatar src={`https://avatars.dicebear.com/api/human/${seed}.svg`}/>
+        <Link to={`/rooms/${id}`}>
+            <div className="sidebarChat">
+                <Avatar src={`https://avatars.dicebear.com/api/human/${seed}.svg`}/>
 
-            <div className="sidebarChat__info">
-                <h2> Nombre de chat </h2>
-                <p> Ultimo mensaje...</p>
+                <div className="sidebarChat__info">
+                    <h2> {name} </h2>
+                    <p> Ultimo mensaje...</p>
+                </div>
             </div>
-        </div>
+        </Link>
     ) : (
         <div 
             className="sidebarChat"
