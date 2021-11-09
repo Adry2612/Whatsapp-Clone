@@ -27,8 +27,7 @@ export default function SidebarChat({  id, name, addNewChat }) {
             await addDoc(collection(db, "rooms"), {name: roomName});
         }
     };
-
-    console.log(id);
+    
     return !addNewChat ? (
         <Link to={`/rooms/${id}`}>
             <div className="sidebarChat">

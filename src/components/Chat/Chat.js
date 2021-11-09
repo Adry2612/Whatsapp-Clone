@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {useParams} from "react-router-dom";
-import { getDoc, doc } from 'firebase/firestore';
+import { addDoc, getDoc, doc, collection, onSnapshot, orderBy, query, serverTimestamp } from 'firebase/firestore';
+import {useStateValue} from "../../components/StateProvider/StateProvider";
 
 import db from '../../firebase';
 import "./Chat.css";
@@ -22,14 +23,29 @@ export default function Chat() {
 
     const { roomId } = useParams();
 
+    const [messages, setMessages] = useState([]);
+
+    const [{ user }, dispatch] = useStateValue();
+
+
     /* Buscamos cambios en la id del chat para modificar los mensajes del chat. */
     useEffect(async () => {
         if (roomId) {
             const roomRef = doc(db, "rooms", roomId);
             const roomSnap = await getDoc(roomRef);
             setRoomName(roomSnap.data().name);
+
+            // Para ordenar necesitamos introducir la collection en una query.
+            const a = await query(collection(db,"rooms", roomId, "messages"), orderBy("timestamp", "asc"))
+            const messageCollection = onSnapshot(a, (snapshot) => {
+                setMessages(snapshot.docs.map((doc) => (
+                    doc.data()
+                )));
+            });
         }
     }, [roomId]);
+
+    console.log(messages);
 
     /* Cada vez que se cargue el componente se genera el número aleatorio que modifica el seed. */
     useEffect(() => {
@@ -40,7 +56,13 @@ export default function Chat() {
     /* Enviar mensaje y eliminar del input. */
     const sendMessage = (e) => {
         e.preventDefault();
-        console.log(input);
+        const payload = {
+            name: user.displayName,
+            message: input, 
+            timestamp: serverTimestamp()
+        }
+
+        addDoc(collection(db,"rooms", roomId, "messages"), payload);
         setInput("");
     }
 
@@ -69,14 +91,15 @@ export default function Chat() {
                 </div>
             </div>
             <div className="chat__body">
-                <p className="chat__message">
-                    <span className="chat__name"> Adrián Vidal </span>
-                    Holaaaaa estoy aqui haciendo cosas 
-                    <span className="chat__timestamp">
-                        10:34
-                    </span>
-                 </p>
-                <p className="chat__message chat__receiver"> Holaaaaa </p>
+                {messages.map((message) => (
+                    <p className={`chat__message ${message.name === user.displayName && "chat__receiver"}`}>
+                        <span className="chat__name"> {message.name} </span>
+                        {message.message} 
+                        <span className="chat__timestamp">
+                            {new Date(message.timestamp?.toDate()).toUTCString()}
+                        </span>
+                    </p>
+                ))}
              
             </div>
             <div className="chat__footer">
