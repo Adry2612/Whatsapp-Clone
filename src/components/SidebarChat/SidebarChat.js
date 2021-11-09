@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import { Link } from "react-router-dom";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, onSnapshot, query, orderBy, docs } from "firebase/firestore";
 
 import './SidebarChat.css';
 
@@ -11,7 +11,18 @@ export default function SidebarChat({  id, name, addNewChat }) {
 
     /* Numero aleatorio que modifica la imagen de perfil. */
     const [seed, setSeed] = useState("");
+    const [messages, setMessages] = useState("");
 
+    useEffect(async () => {
+        if (id){
+            const a = await query(collection(db,"rooms", id, "messages"), orderBy("timestamp", "desc"))
+            const messageCollection = onSnapshot(a, (snapshot) => {
+                setMessages(snapshot.docs.map((doc) => (
+                    doc.data()
+                )));
+            });
+        }
+    }, [id])
     /* Cada vez que se cargue el componente se genera el número aleatorio que modifica el seed. */
     useEffect(() => {
         let randomNumber = Math.floor(Math.random() * 10000);
@@ -35,7 +46,7 @@ export default function SidebarChat({  id, name, addNewChat }) {
 
                 <div className="sidebarChat__info">
                     <h2> {name} </h2>
-                    <p> Ultimo mensaje...</p>
+                    <p> {messages[0]?.message}</p>
                 </div>
             </div>
         </Link>

@@ -73,7 +73,9 @@ export default function Chat() {
 
                 <div className="chat__headerInfo">
                     <h3> {roomName} </h3>
-                    <p> Última conexión </p>
+                    <p> Última conexión {" "}
+                        {new Date([messages.length -1]?.timestamp?.toDate()).toUTCString()}
+                    </p>
                 </div>
 
                 <div className="chat__headerRight">
